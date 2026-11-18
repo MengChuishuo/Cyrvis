@@ -1,8 +1,11 @@
 import { Outlet } from 'react-router';
 import { AppSidebar } from '@/renderer/src/components/SideBar/app-sidebar';
-import { SidebarInset, SidebarProvider } from '@renderer/components/ui/sidebar';
-import { CyrvisVoiceController } from '@renderer/components/CyrvisVoice/CyrvisVoiceController';
-import { CyrvisVoiceStatusIndicator } from '@renderer/components/CyrvisVoice/CyrvisVoiceStatusIndicator';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@renderer/components/ui/sidebar';
+import { VoiceRuntime } from '@renderer/components/CyrvisVoice/VoiceRuntime';
 
 export function MainLayout() {
   return (
@@ -12,10 +15,14 @@ export function MainLayout() {
     >
       <AppSidebar />
       <SidebarInset className="flex-1">
-        <Outlet />
+        <div className="cyrvis-window-bar draggable-area">
+          <SidebarTrigger className="non-draggable-area" />
+        </div>
+        <div className="cyrvis-content">
+          <Outlet />
+        </div>
       </SidebarInset>
-      <CyrvisVoiceController />
-      <CyrvisVoiceStatusIndicator />
+      <VoiceRuntime />
     </SidebarProvider>
   );
 }

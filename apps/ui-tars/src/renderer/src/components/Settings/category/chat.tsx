@@ -107,7 +107,7 @@ export function ChatSettings() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="zh">中文</SelectItem>
+                      <SelectItem value="zh">Chinese</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>

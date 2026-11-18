@@ -9,7 +9,10 @@ import { Toaster } from 'sonner';
 import { MainLayout } from './layouts/MainLayout';
 
 import './styles/globals.css';
+import Companion from './components/CyrvisCompanion/Companion';
+import './components/CyrvisCompanion/companion.css';
 
+const HistoryPage = lazy(() => import('./pages/history'));
 const Home = lazy(() => import('./pages/home'));
 const LocalOperator = lazy(() => import('./pages/local'));
 const FreeRemoteOperator = lazy(() => import('./pages/remote/free'));
@@ -30,12 +33,14 @@ export default function App() {
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/history/:id" element={<HistoryPage />} />
             <Route path="/local" element={<LocalOperator />} />
             <Route path="/free-remote" element={<FreeRemoteOperator />} />
             {/* <Route path="/paid-remote" element={<PaidRemoteOperator />} /> */}
           </Route>
 
           <Route path="/widget" element={<Widget />} />
+          <Route path="/companion" element={<Companion />} />
         </Routes>
         <Toaster
           position="top-right"

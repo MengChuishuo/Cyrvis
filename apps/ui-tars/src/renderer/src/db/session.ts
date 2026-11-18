@@ -6,6 +6,12 @@ import { get, set, del, entries, createStore } from 'idb-keyval';
 import { v4 } from 'uuid';
 import { Operator } from '@main/store/types';
 
+export function notifyHistoryChanged() {
+  const channel = new BroadcastChannel('cyrvis-history');
+  channel.postMessage({ type: 'changed' });
+  channel.close();
+}
+
 // Session 相关的类型定义
 export interface SessionMetaInfo {
   operator: Operator;
@@ -42,6 +48,7 @@ export class SessionManager {
     };
 
     await set(session.id, session, sessionStore);
+    notifyHistoryChanged();
     return session;
   }
 
@@ -71,6 +78,7 @@ export class SessionManager {
     };
 
     await set(id, updatedSession, sessionStore);
+    notifyHistoryChanged();
     return updatedSession;
   }
 
@@ -80,6 +88,7 @@ export class SessionManager {
     if (!session) return false;
 
     await del(id, sessionStore);
+    notifyHistoryChanged();
     return true;
   }
 }

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "awesome-capoo--lan-kehan",
+    "repo": "https://github.com/legeling/awesome-codex-pet",
+    "revision": "2eec77ad9877275a9044cf248ed661e8d607dc23",
+    "path": "pets/capoo--lan-kehan",
+    "author": "lan-kehan",
+    "license": "Non-commercial use only. Bugcat Capoo character rights and trademarks remain with their respective owners."
+  },
+  {
+    "id": "awesome-bubu--gbn666",
+    "repo": "https://github.com/legeling/awesome-codex-pet",
+    "revision": "2eec77ad9877275a9044cf248ed661e8d607dc23",
+    "path": "pets/bubu--gbn666",
+    "author": "Guo Beining",
+    "license": "MIT License"
+  },
+  {
+    "id": "awesome-agumon--legeling",
+    "repo": "https://github.com/legeling/awesome-codex-pet",
+    "revision": "2eec77ad9877275a9044cf248ed661e8d607dc23",
+    "path": "pets/agumon--legeling",
+    "author": "legeling",
+    "license": "Non-commercial use only. Unofficial AI-generated fan art. Character and brand rights remain with their respective owners; this metadata grants no rights to the original character or reference artwork."
+  },
+  {
+    "id": "jarvis",
+    "repo": "https://github.com/LYiHub/pub-local-jarvis",
+    "revision": "dd8fbf97a3e0f96239a0a465398654be68e88e15",
+    "path": "desktop/assets/pet",
+    "author": "AI Jarvis contributors",
+    "license": "MIT (repository LICENSE)"
+  }
+]

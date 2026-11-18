@@ -324,11 +324,7 @@ const RemoteOperator = () => {
 
   return (
     <div className="flex flex-col w-full h-full">
-      <NavHeader
-        title={state.operator}
-        onBack={handleBack}
-        docUrl="https://github.com/bytedance/UI-TARS-desktop/"
-      >
+      <NavHeader title={state.operator} onBack={handleBack}>
         <CountDown
           operator={state.operator}
           status={status}

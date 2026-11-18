@@ -7,6 +7,7 @@ import { app, BrowserWindow } from 'electron';
 import { logger } from '@main/logger';
 
 import { createWindow } from './createWindow';
+import { hideCompanionWindow, showCompanionWindow } from './companionWindow';
 
 let mainWindow: BrowserWindow | null = null;
 let isQuitting = false;
@@ -29,8 +30,12 @@ export function show() {
 }
 
 export function createMainWindow() {
+  if (mainWindow && !mainWindow.isDestroyed()) return mainWindow;
   mainWindow = createWindow({
-    routerPath: '/local',
+    routerPath: '/',
+    title: 'Cyrvis',
+    minWidth: 640,
+    minHeight: 480,
     width: 1200,
     height: 700,
     alwaysOnTop: false,
@@ -53,6 +58,7 @@ export function createMainWindow() {
     } else {
       mainWindow?.hide();
     }
+    showCompanionWindow();
   });
 
   return mainWindow;
@@ -64,6 +70,15 @@ export function setContentProtection(enable: boolean) {
 
 export async function showWindow() {
   await showMainWindow();
+}
+
+export function sendCompanionCommand(command: string) {
+  if (command === 'settings') void showWindow();
+  mainWindow?.webContents.send('cyrvis:companion:command', command);
+}
+
+export function showCompanion() {
+  showCompanionWindow();
 }
 
 export async function hideMainWindow() {
@@ -79,6 +94,7 @@ export async function hideMainWindow() {
 
 export async function showMainWindow() {
   try {
+    hideCompanionWindow();
     if (!mainWindow || mainWindow.isDestroyed()) {
       mainWindow = createMainWindow();
     }

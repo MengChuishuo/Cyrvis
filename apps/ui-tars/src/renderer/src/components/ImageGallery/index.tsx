@@ -92,7 +92,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   useEffect(() => {
     setCurrentIndex(imageEntries.length - 1);
-  }, [imageEntries]);
+  }, [imageEntries.length]);
 
   const handleSliderChange = (value: number[]) => {
     setCurrentIndex(value[0]);
@@ -174,6 +174,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Previous screenshot"
           onClick={handlePrevious}
           disabled={imageEntries.length <= 1 || currentIndex === 0}
         >
@@ -182,6 +183,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Next screenshot"
           onClick={handleNext}
           disabled={
             imageEntries.length <= 1 || currentIndex === imageEntries.length - 1
@@ -191,6 +193,7 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
         </Button>
         <div className="flex-1">
           <Slider
+            aria-label="Screenshot timeline"
             value={[currentIndex]}
             min={0}
             max={imageEntries.length - 1}
@@ -205,14 +208,16 @@ const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   return (
     <div className="h-full flex flex-col py-4">
-      <div className="flex overflow-x-scroll gap-2">{renderActions()}</div>
+      <div className="flex shrink-0 overflow-x-auto gap-2">
+        {renderActions()}
+      </div>
 
       <SnapshotImage
         src={`data:${mime};base64,${currentEntry.imageData}`}
         alt={`screenshot from message ${currentEntry.originalIndex + 1}`}
       />
 
-      <div className="flex items-center mt-4">{renderSlider()}</div>
+      <div className="flex shrink-0 items-center mt-4">{renderSlider()}</div>
     </div>
   );
 };

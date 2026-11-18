@@ -6,7 +6,7 @@ import { initIpc } from '@ui-tars/electron-ipc/main';
 import { StatusEnum, Conversation, Message } from '@ui-tars/shared/types';
 import { store } from '@main/store/create';
 import { runAgent } from '@main/services/runAgent';
-import { showWindow } from '@main/window/index';
+import { showCompanion } from '@main/window/index';
 
 import { closeScreenMarker } from '@main/window/ScreenMarker';
 import { GUIAgent } from '@ui-tars/sdk';
@@ -76,7 +76,7 @@ export const agentRoute = t.router({
     const { abortController } = store.getState();
     store.setState({ status: StatusEnum.END, thinking: false });
 
-    showWindow();
+    showCompanion();
 
     abortController?.abort();
     const guiAgent = GUIAgentManager.getInstance().getAgent();

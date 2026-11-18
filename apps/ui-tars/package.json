@@ -33,7 +33,9 @@
     "publish:mac-arm64": "npm run build && electron-forge publish --arch=arm64 --platform=darwin",
     "publish:win32": "npm run build && electron-forge publish --arch=x64 --platform=win32",
     "publish:win32-arm64": "npm run build && electron-forge publish --arch=arm64 --platform=win32",
-    "publish": "npm run build && electron-forge publish"
+    "publish": "npm run build && electron-forge publish",
+    "test:companion:ui": "node scripts/check-companion.cjs",
+    "test:companion": "vitest run --config vitest.companion.config.mts"
   },
   "build": {
     "electronDownload": {

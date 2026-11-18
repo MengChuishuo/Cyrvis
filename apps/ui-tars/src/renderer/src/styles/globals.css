@@ -2,8 +2,8 @@
  * Copyright (c) 2025 Bytedance, Inc. and its affiliates.
  * SPDX-License-Identifier: Apache-2.0
  */
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -132,11 +132,315 @@
   z-index: 11;
 }
 
-[role=button],
+[role='button'],
 button {
-  cursor: pointer
+  cursor: pointer;
 }
 
 body {
   background-color: transparent !important;
+}
+
+/* Quiet, history-first workspace. */
+:root {
+  --cyrvis-surface: #fcfcfb;
+  --cyrvis-sidebar: #f4f4f2;
+  --cyrvis-ink: #272725;
+  --cyrvis-secondary: #70706b;
+  --cyrvis-line: #e7e7e3;
+}
+.cyrvis-sidebar [data-sidebar='sidebar'] {
+  background: var(--cyrvis-sidebar);
+}
+.cyrvis-sidebar-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 20px;
+}
+.cyrvis-sidebar-brand a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+.cyrvis-sidebar-brand img {
+  width: 25px;
+  height: 25px;
+}
+.cyrvis-icon-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--cyrvis-secondary);
+}
+.cyrvis-icon-button:hover {
+  background: var(--cyrvis-line);
+}
+.cyrvis-history-nav {
+  padding: 4px 12px 24px;
+  color: var(--cyrvis-ink);
+}
+.cyrvis-history-nav h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.cyrvis-history-nav h3 {
+  margin: 22px 8px 8px;
+  color: var(--cyrvis-secondary);
+  font-size: 11px;
+}
+.cyrvis-history-nav > p {
+  padding: 20px 8px;
+  font-size: 12px;
+  color: var(--cyrvis-secondary);
+  line-height: 1.8;
+}
+.cyrvis-history-nav a {
+  display: flex;
+  padding: 9px 10px;
+  margin: 2px 0;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.cyrvis-history-nav a span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cyrvis-history-nav a:hover {
+  background: #eaeae6;
+}
+.cyrvis-history-nav a[aria-current='page'] {
+  background: #e5e5e0;
+}
+.cyrvis-window-bar {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  background: var(--cyrvis-surface);
+}
+.cyrvis-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--cyrvis-surface);
+  color: var(--cyrvis-ink);
+}
+.cyrvis-home {
+  height: 100%;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cyrvis-welcome {
+  margin: auto;
+  text-align: center;
+  padding: 24px;
+}
+.cyrvis-welcome-logo {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 28px;
+}
+.cyrvis-welcome h1 {
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 500;
+  letter-spacing: -1.2px;
+}
+.cyrvis-welcome p {
+  margin: 18px 0 8px;
+  color: #55554f;
+  font-size: 14px;
+}
+.cyrvis-welcome span,
+.cyrvis-welcome-footer {
+  color: var(--cyrvis-secondary);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.cyrvis-welcome-footer {
+  padding: 20px;
+}
+.cyrvis-record {
+  max-width: 780px;
+  margin: auto;
+  padding: 32px 40px 64px;
+  overflow-wrap: anywhere;
+}
+.cyrvis-record header {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--cyrvis-line);
+}
+.cyrvis-record header > p {
+  color: var(--cyrvis-secondary);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.cyrvis-record h1 {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.cyrvis-message {
+  padding: 24px 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.cyrvis-message h2 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyrvis-secondary);
+  margin-bottom: 10px;
+}
+.cyrvis-message.human {
+  margin: 24px 0 0;
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: var(--cyrvis-sidebar);
+}
+.cyrvis-message img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+.cyrvis-message summary {
+  cursor: pointer;
+  color: var(--cyrvis-secondary);
+  font-size: 12px;
+}
+.cyrvis-history-empty {
+  padding: 48px 32px;
+  color: var(--cyrvis-secondary);
+  font-size: 14px;
+}
+.cyrvis-task-step {
+  border-left: 2px solid var(--cyrvis-line);
+  padding-left: 12px;
+  margin-top: 12px;
+}
+.cyrvis-task-step > span {
+  font-size: 12px;
+  color: var(--cyrvis-secondary);
+}
+.cyrvis-content :focus-visible,
+.cyrvis-sidebar :focus-visible {
+  outline: 2px solid #4c83bb;
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .cyrvis-window-bar {
+    padding-left: 80px;
+  }
+  .cyrvis-record {
+    padding: 24px;
+  }
+}
+
+.cyrvis-history-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.cyrvis-history-row > a {
+  flex: 1;
+  min-width: 0;
+}
+.cyrvis-history-menu {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+.cyrvis-welcome > button {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cyrvis-conversation {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
+}
+.cyrvis-conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 24px;
+}
+.cyrvis-conversation-header > div {
+  min-width: 0;
+}
+.cyrvis-conversation-header h1 {
+  font-size: 18px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cyrvis-conversation-header p {
+  font-size: 12px;
+  color: var(--cyrvis-secondary);
+  margin-bottom: 6px;
+}
+.cyrvis-conversation-header > button {
+  flex-shrink: 0;
+}
+.cyrvis-conversation-panes {
+  display: grid;
+  grid-template-columns: minmax(240px, 2fr) minmax(260px, 3fr);
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+  padding: 0 20px 20px;
+}
+.cyrvis-text-pane,
+.cyrvis-screenshot-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--cyrvis-line);
+  border-radius: 10px;
+  overflow: auto;
+}
+.cyrvis-text-pane > h2,
+.cyrvis-screenshot-pane > h2 {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.cyrvis-message-scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.cyrvis-screenshot-pane > div {
+  min-height: 0;
+}
+@media (max-width: 700px) {
+  .cyrvis-conversation-panes {
+    gap: 8px;
+    padding: 0 8px 8px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .cyrvis-text-pane,
+  .cyrvis-screenshot-pane {
+    padding: 10px;
+  }
 }

@@ -15,3 +15,7 @@ declare module '*?url' {
 declare module '*.png?asset' {
   export default string;
 }
+
+interface ImportMeta {
+  glob: import('vite').ImportGlobFunction;
+}

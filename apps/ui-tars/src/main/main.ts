@@ -18,15 +18,7 @@ import ElectronStore from 'electron-store';
 
 import * as env from '@main/env';
 import { logger } from '@main/logger';
-import {
-  createMainWindow,
-  hideMainWindow,
-  showMainWindow,
-} from '@main/window/index';
-import {
-  showWidgetWindow,
-  syncWidgetOverlayMode,
-} from '@main/window/ScreenMarker';
+import { createMainWindow, showCompanion } from '@main/window/index';
 import { registerIpcMain } from '@ui-tars/electron-ipc/main';
 import { ipcRoutes } from './ipcRoutes';
 
@@ -39,6 +31,7 @@ import { sanitizeState } from './utils/sanitizeState';
 import { windowManager } from './services/windowManager';
 import { checkBrowserAvailability } from './services/browserCheck';
 import { startVoiceService } from './cyrvis/voice-service';
+import icon from '@resources/icon.png?asset';
 
 const { isProd } = env;
 
@@ -48,7 +41,7 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    void showMainWindow();
+    showCompanion();
   });
 }
 
@@ -98,6 +91,7 @@ const loadDevDebugTools = async () => {
 };
 
 const initializeApp = async () => {
+  if (process.platform === 'darwin') app.dock?.setIcon(icon);
   const isAccessibilityEnabled = app.isAccessibilitySupportEnabled();
   logger.info('isAccessibilityEnabled', isAccessibilityEnabled);
   if (env.isMacOS) {
@@ -158,16 +152,10 @@ const initializeApp = async () => {
   );
 
   const { unsubscribe } = registerIPCHandlers([mainWindow]);
-  const unsubscribeWidgetOverlay = SettingStore.getInstance().onDidAnyChange(
-    () => {
-      syncWidgetOverlayMode();
-    },
-  );
 
   // Voice layer is optional; it no-ops when QWEN_API_KEY is absent.
   startVoiceService();
-  await hideMainWindow();
-  showWidgetWindow();
+  showCompanion();
 
   app.on('window-all-closed', () => {
     logger.info('window-all-closed');
@@ -184,7 +172,6 @@ const initializeApp = async () => {
 
   app.on('quit', () => {
     logger.info('app quit');
-    unsubscribeWidgetOverlay();
     unsubscribe();
   });
 
@@ -192,12 +179,8 @@ const initializeApp = async () => {
     logger.info('app activate');
     if (!mainWindow || mainWindow.isDestroyed()) {
       mainWindow = createMainWindow();
-    } else {
-      if (!mainWindow.isVisible()) {
-        mainWindow.show();
-      }
-      mainWindow.focus();
     }
+    showCompanion();
   });
 
   logger.info('initializeApp end');

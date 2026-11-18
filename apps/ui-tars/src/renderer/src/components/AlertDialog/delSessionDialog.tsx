@@ -17,30 +17,38 @@ interface DeleteSessionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
+  name?: string;
+  deleting?: boolean;
 }
 
 export function DeleteSessionDialog({
   open,
   onOpenChange,
   onConfirm,
+  name,
+  deleting = false,
 }: DeleteSessionDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Session</AlertDialogTitle>
+          <AlertDialogTitle>Delete chat?</AlertDialogTitle>
           <AlertDialogDescription>
-            The current session is running. Navigating away will forcibly stop
-            the session. Do you still want to proceed?
+            {name ? `Delete “${name}”? ` : ''}This removes the chat and its
+            saved messages and screenshots. This cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             className="bg-red-500 hover:bg-red-600"
-            onClick={onConfirm}
+            disabled={deleting}
+            onClick={(event) => {
+              event.preventDefault();
+              onConfirm();
+            }}
           >
-            Delete
+            {deleting ? 'Deleting…' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

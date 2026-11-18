@@ -1,3 +1,4 @@
+import { showCompanion } from '@main/window';
 /*
  * Copyright (c) 2025 Bytedance, Inc. and its affiliates.
  * SPDX-License-Identifier: Apache-2.0
@@ -12,7 +13,6 @@ import type { AppState } from '@main/store/types';
 import {
   closeScreenMarker,
   hideScreenWaterFlow,
-  showWidgetWindow,
 } from '@main/window/ScreenMarker';
 
 import type { GUIAdapter, GUIAdapterCallbacks } from './types';
@@ -325,6 +325,6 @@ export class ElectronGUIAdapter implements GUIAdapter {
   private restoreUI(): void {
     closeScreenMarker();
     hideScreenWaterFlow();
-    showWidgetWindow();
+    showCompanion();
   }
 }

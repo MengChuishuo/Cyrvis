@@ -39,6 +39,8 @@ interface VoiceService {
 let service: VoiceService | null = null;
 let captureService: CaptureService | null = null;
 let captureReady = false;
+let capturePaused = false;
+let startupPromise: Promise<void> | null = null;
 let captureGeneration = 0;
 let captureRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let captureRetryAttempts = 0;
@@ -849,7 +851,7 @@ const scheduleCaptureRetry = (message: string) => {
   // Bluetooth headsets sleep and temporarily disappear from Chromium's device
   // list. Keep trying long enough for the user to power the headset back on
   // instead of requiring an app restart.
-  if (captureRetryTimer || captureRetryAttempts >= 1000) {
+  if (capturePaused || captureRetryTimer || captureRetryAttempts >= 1000) {
     return;
   }
   if (!/No physical microphone|Microphone disconnected/i.test(message)) {
@@ -871,6 +873,7 @@ const scheduleCaptureRetry = (message: string) => {
 };
 
 const startCapture = async (resetRetries = false): Promise<void> => {
+  if (capturePaused) return;
   if (resetRetries) {
     captureRetryAttempts = 0;
     clearCaptureRetry();
@@ -880,7 +883,7 @@ const startCapture = async (resetRetries = false): Promise<void> => {
   captureService = null;
   captureReady = false;
   try {
-    captureService = await startCaptureService(
+    const startedCapture = await startCaptureService(
       {
         onPcm: (pcm16) => {
           if (generation === captureGeneration) {
@@ -932,6 +935,11 @@ const startCapture = async (resetRetries = false): Promise<void> => {
       // the main process instead.
       { echoCancellation: false },
     );
+    if (generation !== captureGeneration || capturePaused) {
+      startedCapture.close();
+      return;
+    }
+    captureService = startedCapture;
   } catch (error) {
     if (generation === captureGeneration) {
       captureReady = false;
@@ -1050,8 +1058,18 @@ const registerVoiceIpc = () => {
       return { ok: false, error: 'voice service is not configured' };
     }
     try {
+      const generation = captureGeneration;
+      // Startup already connects and opens capture. Wait rather than creating
+      // a competing connection when the main renderer mounts.
+      await startupPromise;
+      if (capturePaused && generation !== captureGeneration)
+        return { ok: false, error: 'Voice was paused' };
       await service.brain.start();
-      return { ok: true, state: service.brain.getState() };
+      if (capturePaused && generation !== captureGeneration)
+        return { ok: false, error: 'Voice was paused' };
+      capturePaused = false;
+      if (!captureService) await startCapture(true);
+      return { ok: true, state: service.brain.getState(), captureReady };
     } catch (error) {
       logger.error('[cyrvis voice] start failed', error);
       return {
@@ -1059,6 +1077,18 @@ const registerVoiceIpc = () => {
         error: error instanceof Error ? error.message : String(error),
       };
     }
+  });
+
+  ipcMain.handle('cyrvis:voice:stop', () => {
+    capturePaused = true;
+    clearCaptureRetry();
+    captureGeneration += 1;
+    captureReady = false;
+    captureService?.close();
+    captureService = null;
+    service?.provider.bargeIn();
+    service?.brain.sleep();
+    broadcast('cyrvis:voice:response-stopped');
   });
 
   ipcMain.handle('cyrvis:voice:get-state', () => {
@@ -1624,7 +1654,7 @@ export const startVoiceService = (): VoiceService | null => {
   });
 
   // Connect eagerly so the app is listening after launch.
-  brain
+  startupPromise = brain
     .start()
     .then(async () => {
       logger.info('[cyrvis voice] qwen connected');

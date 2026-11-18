@@ -88,6 +88,8 @@ export function useVoiceAudio() {
   const [assistantText, setAssistantText] = useState('');
   const [micReady, setMicReady] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const connectingRef = useRef(false);
   const [playbackActive, setPlaybackActive] = useState(false);
   const [audioMode, setAudioModeState] = useState<'headset' | 'speaker'>(
     'headset',
@@ -820,14 +822,22 @@ export function useVoiceAudio() {
   }, [flushPending]);
 
   const start = useCallback(async () => {
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+    setConnecting(true);
+    setError(null);
     try {
       if (window.electron.voice.externalCapture) {
         // Capture lives in a hidden renderer; the main window only plays TTS.
-        setMicReady(true);
+        setMicReady(false);
       } else {
         await ensureMic();
       }
-      await window.electron.voice.start();
+      const result = await window.electron.voice.start();
+      if (!result?.ok) throw new Error(result?.error || 'Voice is unavailable');
+      if (result.state) setState(result.state);
+      if (window.electron.voice.externalCapture)
+        setMicReady(Boolean(result.captureReady));
     } catch (err) {
       const name = err instanceof DOMException ? err.name : 'Error';
       const detail = err instanceof Error ? err.message : String(err);
@@ -836,6 +846,9 @@ export function useVoiceAudio() {
       setError(message);
       setMicReady(false);
       startedRef.current = false;
+    } finally {
+      connectingRef.current = false;
+      setConnecting(false);
     }
   }, [ensureMic]);
 
@@ -868,10 +881,12 @@ export function useVoiceAudio() {
   }, [ensureMic, stopCapture]);
 
   const stop = useCallback(async () => {
+    setThinking(false);
     stopPlayback();
+    finishPlayback();
     await stopCapture();
-    window.electron.voice.sleep();
-  }, [stopCapture, stopPlayback]);
+    await window.electron.voice.stop();
+  }, [stopCapture, stopPlayback, finishPlayback]);
 
   useEffect(() => {
     if (voiceOwner) {
@@ -913,11 +928,14 @@ export function useVoiceAudio() {
       window.electron.voice.onPttState((state) => setPtt(state)),
       window.electron.voice.onAudio(playPcm),
       window.electron.voice.onSpeechStarted(() => {
+        setTranscript('');
+        setAssistantText('');
         stopPlayback();
       }),
       window.electron.voice.onSpeechStopped(() => undefined),
       window.electron.voice.onThinking(() => setThinking(true)),
       window.electron.voice.onResponseStarted(() => {
+        setAssistantText('');
         setThinking(false);
         // If the previous response is still audible, do NOT stop its player:
         // the provider serializes responses, but this is the last-resort guard
@@ -980,11 +998,8 @@ export function useVoiceAudio() {
         // reopens the microphone via finishPlayback().
         playerRef.current?.finish();
       }),
-      window.electron.voice.onTranscript(({ text, final }) => {
+      window.electron.voice.onTranscript(({ text }) => {
         setTranscript(text);
-        if (final) {
-          setAssistantText('');
-        }
       }),
       window.electron.voice.onAssistantText(({ text, final }) => {
         setThinking(false);
@@ -1244,6 +1259,7 @@ export function useVoiceAudio() {
     transcript,
     assistantText,
     micReady,
+    connecting,
     thinking,
     playbackActive,
     audioMode,

@@ -18,8 +18,15 @@ export let tray: Tray | null = null;
 export async function createTray() {
   // 创建两种状态的图标
   const normalIcon = nativeImage
-    .createFromPath(path.join(__dirname, '../../resources/logo-vector.png'))
+    .createFromPath(
+      path.join(
+        __dirname,
+        '../../resources',
+        process.platform === 'darwin' ? 'trayTemplate.png' : 'logo-vector.png',
+      ),
+    )
     .resize({ width: 16, height: 16 });
+  normalIcon.setTemplateImage(process.platform === 'darwin');
 
   const pauseIcon = nativeImage
     .createFromPath(path.join(__dirname, '../../resources/pause-light.png'))

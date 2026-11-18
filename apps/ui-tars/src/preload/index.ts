@@ -1,3 +1,4 @@
+import type { CompanionSnapshot } from '@shared/companion';
 /**
  * Copyright (c) 2025 Bytedance, Inc. and its affiliates.
  * SPDX-License-Identifier: Apache-2.0
@@ -78,6 +79,30 @@ const electronHandler = {
       ipcRenderer.on('setting-updated', (_, state) => callback(state));
     },
   },
+  companion: {
+    command: (command: 'start' | 'stop' | 'interrupt' | 'audio-mode') =>
+      ipcRenderer.invoke('companion:command', command),
+    getState: (): Promise<CompanionSnapshot> =>
+      ipcRenderer.invoke('companion:get-state'),
+    publish: (state: CompanionSnapshot) =>
+      ipcRenderer.invoke('companion:publish', state),
+    onState: (callback: (state: CompanionSnapshot) => void) => {
+      const listener = (_event: IpcRendererEvent, state: CompanionSnapshot) =>
+        callback(state);
+      ipcRenderer.on('companion:state', listener);
+      return () => {
+        ipcRenderer.removeListener('companion:state', listener);
+      };
+    },
+    onCommand: (callback: (command: string) => void) => {
+      const listener = (_event: IpcRendererEvent, command: string) =>
+        callback(command);
+      ipcRenderer.on('cyrvis:companion:command', listener);
+      return () => {
+        ipcRenderer.removeListener('cyrvis:companion:command', listener);
+      };
+    },
+  },
   voice: {
     isTestMode: process.env.CYRVIS_VOICE_TEST === '1',
     // Capture runs in a hidden renderer that never plays audio; the main
@@ -128,6 +153,7 @@ const electronHandler = {
         ipcRenderer.removeListener('cyrvis:voice:audio-mode', listener);
     },
     start: () => ipcRenderer.invoke('cyrvis:voice:start'),
+    stop: () => ipcRenderer.invoke('cyrvis:voice:stop'),
     testAudio: () => ipcRenderer.invoke('cyrvis:voice:test-audio'),
     togglePtt: () => ipcRenderer.invoke('cyrvis:voice:toggle-ptt'),
     getPtt: () => ipcRenderer.invoke('cyrvis:voice:get-ptt'),

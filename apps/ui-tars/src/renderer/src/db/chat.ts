@@ -4,6 +4,7 @@
  */
 // /apps/ui-tars/src/renderer/src/db/chat.ts
 import { get, set, del, createStore } from 'idb-keyval';
+import { notifyHistoryChanged } from './session';
 import { ConversationWithSoM } from '@/main/shared/types';
 
 export interface ChatMetaInfo {
@@ -19,6 +20,7 @@ export class ChatManager {
     messages: ConversationWithSoM[],
   ) {
     await set(sessionId, messages, chatStore);
+    notifyHistoryChanged();
     return messages;
   }
 
@@ -27,6 +29,7 @@ export class ChatManager {
     messages: ConversationWithSoM[],
   ) {
     await set(sessionId, messages, chatStore);
+    notifyHistoryChanged();
 
     return messages;
   }

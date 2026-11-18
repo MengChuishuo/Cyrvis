@@ -1,0 +1,276 @@
+.companion-root {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 6px;
+  box-sizing: border-box;
+  gap: 8px;
+  background: transparent;
+  user-select: none;
+}
+
+.companion-button {
+  width: 208px;
+  touch-action: none;
+  height: 238px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.companion-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 14px rgb(35 73 111 / 14%));
+  animation: companion-breathe 4.8s ease-in-out infinite;
+}
+
+.companion-button:focus-visible img {
+  filter: drop-shadow(0 0 0.4rem rgb(74 144 226 / 75%));
+}
+
+.companion-sprite {
+  display: inline-block;
+  width: 192px;
+  height: 208px;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+  filter: drop-shadow(0 12px 14px rgb(35 73 111 / 14%));
+  animation: companion-frames var(--sprite-duration) steps(var(--sprite-frames))
+    infinite;
+}
+.companion-button:focus-visible .companion-sprite {
+  filter: drop-shadow(0 0 0.4rem rgb(74 144 226 / 75%));
+}
+@keyframes companion-frames {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: var(--sprite-end);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .companion-sprite {
+    animation: none;
+  }
+}
+
+.companion-status {
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid rgb(125 159 194 / 25%);
+  border-radius: 999px;
+  background: rgb(246 250 255 / 88%);
+  color: #365675;
+  font:
+    500 11px/1.2 -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.companion-button:hover .companion-status,
+.companion-button:focus-visible .companion-status {
+  opacity: 1;
+}
+
+.companion-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9aaabd;
+}
+
+.companion-dot.is-ready {
+  background: #4a90e2;
+}
+
+@keyframes companion-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion-button img {
+    animation: none;
+  }
+}
+
+.companion-robot {
+  flex: 0 0 268px;
+  width: 208px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.companion-controls {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+.companion-robot:hover .companion-controls,
+.companion-robot:focus-within .companion-controls,
+.companion-root[data-conversation] .companion-controls {
+  opacity: 1;
+  pointer-events: auto;
+}
+.companion-controls button {
+  border: 1px solid #b9ccdd;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #f6faff;
+  color: #274e72;
+  font:
+    500 11px/1.3 -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  cursor: pointer;
+}
+.companion-controls button:hover {
+  background: #e3effb;
+}
+.companion-controls button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.companion-controls button:focus-visible,
+.companion-conversation-output:focus-visible {
+  outline: 2px solid #3475b3;
+  outline-offset: -2px;
+}
+.companion-conversation {
+  width: 100%;
+  min-height: 0;
+  max-height: 232px;
+  display: flex;
+  flex-direction: column;
+  color: #203c56;
+  font:
+    13px/1.6 -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  -webkit-app-region: no-drag;
+  animation: companion-bubble-in 180ms ease-out;
+}
+.companion-conversation-output {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 10px 12px;
+  user-select: text;
+  overflow-wrap: anywhere;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 1;
+}
+.companion-utterance {
+  position: relative;
+  flex-shrink: 0;
+  width: fit-content;
+  max-width: 86%;
+  padding: 11px 17px;
+  border-radius: 23px;
+  box-shadow: 0 3px 9px rgb(35 73 111 / 10%);
+}
+.companion-utterance p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.companion-utterance.is-user {
+  align-self: flex-start;
+  background: #e0eefc;
+  color: #315779;
+  border-bottom-left-radius: 7px;
+}
+.companion-utterance.is-assistant {
+  align-self: flex-end;
+  background: #f8fbff;
+  border: 1px solid #d6e2ed;
+  border-bottom-right-radius: 8px;
+}
+.companion-utterance.is-assistant::after {
+  content: '';
+  position: absolute;
+  right: 17px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid #d6e2ed;
+  border-bottom: 1px solid #d6e2ed;
+  background: #f8fbff;
+  transform: rotate(45deg);
+  border-bottom-right-radius: 4px;
+}
+.companion-typing {
+  display: flex;
+  gap: 5px;
+  padding: 17px 20px;
+}
+.companion-typing i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7597b6;
+  animation: companion-dot-pulse 1.2s ease-in-out infinite;
+}
+.companion-typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.companion-typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes companion-dot-pulse {
+  50% {
+    opacity: 0.35;
+    transform: translateY(-2px);
+  }
+}
+@keyframes companion-bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .companion-conversation,
+  .companion-typing i {
+    animation: none;
+  }
+  .companion-controls {
+    transition: none;
+  }
+}

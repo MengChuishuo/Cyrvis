@@ -1,14 +1,13 @@
 // /components/Header.tsx
 import { Button } from '@renderer/components/ui/button';
-import { ChevronLeft, FileText } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 interface HeaderProps {
   title: string;
   onBack: () => void;
-  docUrl?: string;
   children?: React.ReactNode;
 }
 
-export function NavHeader({ title, onBack, docUrl, children }: HeaderProps) {
+export function NavHeader({ title, onBack, children }: HeaderProps) {
   return (
     <div className="pl-4 pr-5 py-3 flex items-center gap-2 draggable-area">
       <Button
@@ -23,18 +22,6 @@ export function NavHeader({ title, onBack, docUrl, children }: HeaderProps) {
       </Button>
 
       <div className="flex-1 flex justify-end gap-2">{children}</div>
-
-      {!!docUrl && (
-        <Button
-          variant="outline"
-          className="size-8"
-          size="sm"
-          style={{ '-webkit-app-region': 'no-drag' }}
-          onClick={() => window.open(docUrl, '_blank')}
-        >
-          <FileText strokeWidth={2} />
-        </Button>
-      )}
     </div>
   );
 }
