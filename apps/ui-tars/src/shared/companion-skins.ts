@@ -6,6 +6,7 @@ export interface CompanionSkin {
   group: string;
   directory: string;
   format: 'poses' | 'codex' | 'gif';
+  voice: string;
 }
 
 export const companionSkins: readonly CompanionSkin[] = [
@@ -15,18 +16,20 @@ export const companionSkins: readonly CompanionSkin[] = [
     group: 'Cyrvis',
     directory: '',
     format: 'poses',
+    voice: 'Tina',
   },
   ...[
-    ['capoo--lan-kehan', '猫猫虫咖波 · Bugcat Capoo'],
-    ['bubu--gbn666', 'Bubu 小熊'],
-    ['agumon--legeling', '亚古兽 · Agumon'],
+    ['capoo--lan-kehan', '猫猫虫咖波 · Bugcat Capoo', 'Ryan'],
+    ['bubu--gbn666', 'Bubu 小熊', 'Theo Calm'],
+    ['agumon--legeling', '亚古兽 · Agumon', 'Evan'],
   ].map(
-    ([slug, name]): CompanionSkin => ({
+    ([slug, name, voice]): CompanionSkin => ({
       id: `awesome-${slug}`,
       name,
       group: 'Awesome Codex Pet',
       directory: `skins/awesome/${slug}/`,
       format: 'codex',
+      voice,
     }),
   ),
   {
@@ -35,6 +38,7 @@ export const companionSkins: readonly CompanionSkin[] = [
     group: 'Local Jarvis',
     directory: 'skins/jarvis/',
     format: 'gif',
+    voice: 'Raymond',
   },
 ];
 

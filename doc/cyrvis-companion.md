@@ -134,3 +134,18 @@ isolated Electron UI harness cover streaming/final text, late ASR, new response
 replacement, controls, long text, bounds, idle auto-hide, fresh-turn reopening,
 and compact idle/error presentation. Voice events are simulated; real speech
 still requires valid Qwen credentials and microphone permissions.
+
+## Companion voices
+
+Each bundled companion selects a Qwen voice: Cyrvis Robot → Tina, Capoo → Ryan,
+Bubu → Theo Calm, Agumon → Evan, and Jarvis → Raymond. The appearance store is
+shared with the voice service; startup and reconnects use the saved selection.
+Switching cancels the old response, flushes buffered playback, and updates the
+existing realtime session without dropping conversation context. A paused
+microphone stays paused. QWEN_VOICE is superseded by the companion selection.
+
+Qwen3.8 uses `session.audio.output.voice`; other configured realtime models use
+`session.voice` and must support these voices. The five voices were verified on
+Qwen3.5-Omni-Plus-Realtime with synthetic greetings. The provider tests cover both
+parameter layouts, switching during connection, old-audio suppression, and
+session updates not waking a paused companion.

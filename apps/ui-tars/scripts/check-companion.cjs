@@ -14,13 +14,17 @@ for (const name of ['renderer', 'preload']) {
 }
 const source = `
 import { app, ipcMain, BrowserWindow } from 'electron';
-import { companionSkins } from '${root}/apps/ui-tars/src/shared/companion-skins.ts';
+import { companionSkins, resolveCompanionSkin } from '${root}/apps/ui-tars/src/shared/companion-skins.ts';
+import { getCompanionStore } from '${root}/apps/ui-tars/src/main/store/companion.ts';
 import { createMainWindow, showWindow, showCompanion, sendCompanionCommand } from '${root}/apps/ui-tars/src/main/window/index.ts';
 app.setPath('userData', '${temp}/profile');
 (globalThis as any).clearCount = 0;
 (globalThis as any).sendCompanionCommand = sendCompanionCommand;
 (globalThis as any).companionSkins = companionSkins;
 app.whenReady().then(() => {
+ const store = getCompanionStore();
+ (globalThis as any).selectedVoice = resolveCompanionSkin(store.get('skinId')).voice;
+ store.onDidChange('skinId', id => { (globalThis as any).selectedVoice = resolveCompanionSkin(id).voice; });
  let state = { status: 'init', messages: [], theme: 'light', thinking: false, instructions: '', ensurePermissions: {accessibility:true, screenCapture:true} };
  let settings = { vlmApiKey:'test', vlmBaseUrl:'https://example.invalid', vlmModelName:'test', vlmProvider:'test' };
  const publish = () => BrowserWindow.getAllWindows().forEach(w => w.webContents.send('subscribe', state));
@@ -159,6 +163,9 @@ async function check() {
     const skins = await app.evaluate(() => globalThis.companionSkins);
     for (const skin of skins) {
       await selectSkin(skin.id);
+      expect(await app.evaluate(() => globalThis.selectedVoice)).toBe(
+        skin.voice,
+      );
       for (const state of [
         'idle',
         'listening',
@@ -860,7 +867,12 @@ async function check() {
       'data-skin',
       'jarvis',
     );
-    console.log('Verified: appearance restored after a full Electron restart');
+    expect(await restarted.evaluate(() => globalThis.selectedVoice)).toBe(
+      'Raymond',
+    );
+    console.log(
+      'Verified: appearance and voice restored after a full Electron restart',
+    );
   } finally {
     await restarted.close();
   }

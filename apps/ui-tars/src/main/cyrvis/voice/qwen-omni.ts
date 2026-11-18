@@ -102,7 +102,8 @@ export class QwenOmniProvider implements VoiceProvider {
   private readonly apiKey: string;
   private readonly model: string;
   private readonly endpoint: string;
-  private readonly voice: string;
+  private voice: string;
+  private configuredVoice: string | null = null;
   private readonly baseInstructions: string;
   private context = '';
   private readonly tools: QwenToolDefinition[];
@@ -126,6 +127,31 @@ export class QwenOmniProvider implements VoiceProvider {
     this.silenceDurationMs = config.silenceDurationMs ?? 600;
     this.connectTimeoutMs = config.connectTimeoutMs ?? 15000;
     this.localVad = config.localVad ?? true;
+  }
+
+  /** Switch the Qwen output voice without discarding the conversation. */
+  setVoice(voice: string): boolean {
+    if (voice === this.voice) return false;
+    this.voice = voice;
+    if (this.connected) {
+      this.bargeIn({ forceCommit: false });
+      this.restoreInstructionsIfNeeded();
+      this.sendVoiceUpdate();
+      this.callbacks.onSpeechStopped?.();
+      this.callbacks.onResponseDone?.();
+    }
+    return true;
+  }
+
+  private sendVoiceUpdate(): void {
+    this.configuredVoice = this.voice;
+    this.send({
+      event_id: eventId('event_voice'),
+      type: 'session.update',
+      session: this.model.startsWith('qwen3.8-')
+        ? { audio: { output: { voice: this.voice } } }
+        : { voice: this.voice },
+    });
   }
 
   setContext(context: string): void {
@@ -536,7 +562,9 @@ export class QwenOmniProvider implements VoiceProvider {
       case 'session.created':
         this.sendSessionUpdate();
         break;
-      case 'session.updated':
+      case 'session.updated': {
+        const wasConnected = this.connected;
+        if (this.configuredVoice !== this.voice) this.sendVoiceUpdate();
         this.connected = true;
         if (this.pendingConnect) {
           clearTimeout(this.pendingConnect.timer);
@@ -549,10 +577,11 @@ export class QwenOmniProvider implements VoiceProvider {
         } else {
           console.log('[cyrvis provider] reconnected');
         }
-        // A reconnect fires onClose, which puts VoiceBrain to sleep. Always
-        // re-emit ready so the hands-free session wakes up again.
-        this.callbacks.onReady?.();
+        // A reconnect must wake the brain; an in-session voice update must
+        // not wake a paused companion.
+        if (!wasConnected) this.callbacks.onReady?.();
         break;
+      }
       case 'input_audio_buffer.speech_started':
         this.callbacks.onSpeechStarted?.();
         break;
@@ -694,7 +723,9 @@ export class QwenOmniProvider implements VoiceProvider {
       }
       case 'error': {
         const message = JSON.stringify(event.error || event).slice(0, 1000);
-        if (!this.cancelRequested) {
+        const eventIdValue = (event.error as { event_id?: string } | undefined)
+          ?.event_id;
+        if (!this.cancelRequested || eventIdValue?.startsWith('event_voice_')) {
           this.callbacks.onError?.(new Error(message));
         }
         this.failConnect(new Error(message));
@@ -872,12 +903,13 @@ export class QwenOmniProvider implements VoiceProvider {
   }
 
   private sendSessionUpdate(): void {
+    this.configuredVoice = this.voice;
     this.send({
       event_id: eventId('event_session'),
       type: 'session.update',
       session: {
         modalities: ['text', 'audio'],
-        voice: this.voice,
+        ...(!this.model.startsWith('qwen3.8-') && { voice: this.voice }),
         instructions: this.instructions,
         input_audio_transcription: {
           model: 'qwen3-asr-flash-realtime',
@@ -896,6 +928,7 @@ export class QwenOmniProvider implements VoiceProvider {
             format: { type: 'pcm', sample_rate: 16000 },
           },
           output: {
+            ...(this.model.startsWith('qwen3.8-') && { voice: this.voice }),
             format: { type: 'pcm', sample_rate: 24000 },
           },
         },

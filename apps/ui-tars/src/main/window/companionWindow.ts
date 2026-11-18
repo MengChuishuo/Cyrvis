@@ -7,7 +7,7 @@ import {
   screen,
   type Rectangle,
 } from 'electron';
-import ElectronStore from 'electron-store';
+import { getCompanionStore } from '@main/store/companion';
 import { companionSkins, resolveCompanionSkin } from '@shared/companion-skins';
 import * as env from '@main/env';
 import { windowManager } from '@main/services/windowManager';
@@ -21,10 +21,7 @@ import {
 let companionWindow: BrowserWindow | null = null;
 let ipcRegistered = false;
 let quitting = false;
-let positionStore: ElectronStore<{
-  position: { x: number; y: number };
-  skinId: string;
-}>;
+let positionStore: ReturnType<typeof getCompanionStore>;
 let snapshot: CompanionSnapshot = {
   state: 'idle',
   micReady: false,
@@ -195,7 +192,7 @@ function registerCompanionIpc() {
   });
 }
 function createCompanionWindow() {
-  positionStore ??= new ElectronStore({ name: 'cyrvis-companion' });
+  positionStore ??= getCompanionStore();
   snapshot = {
     ...snapshot,
     skinId: resolveCompanionSkin(positionStore.get('skinId')).id,

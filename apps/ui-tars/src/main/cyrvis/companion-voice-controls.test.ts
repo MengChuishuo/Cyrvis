@@ -12,14 +12,39 @@ const mock = vi.hoisted(() => ({
   brainStart: vi.fn(),
   sleep: vi.fn(),
   bargeIn: vi.fn(),
+  voiceConfig: undefined as string | undefined,
+  skinId: undefined as string | undefined,
+  skinListeners: new Set<(id: string) => void>(),
+  setVoice: vi.fn(() => true),
+  send: vi.fn(),
 }));
 vi.mock('electron', () => ({
   app: { on: vi.fn() },
-  BrowserWindow: { getAllWindows: () => [] },
+  BrowserWindow: {
+    getAllWindows: () => [
+      { isDestroyed: () => false, webContents: { send: mock.send } },
+    ],
+  },
   globalShortcut: { register: () => true },
   ipcMain: {
     handle: (name: string, fn: () => unknown) => mock.handlers.set(name, fn),
     on: vi.fn(),
+  },
+}));
+vi.mock('electron-store', () => ({
+  default: class {
+    get() {
+      return mock.skinId;
+    }
+    set(_key: string, value: string) {
+      if (value === mock.skinId) return;
+      mock.skinId = value;
+      mock.skinListeners.forEach((listener) => listener(value));
+    }
+    onDidChange(_key: string, listener: (id: string) => void) {
+      mock.skinListeners.add(listener);
+      return () => mock.skinListeners.delete(listener);
+    }
   },
 }));
 vi.mock('@main/env', () => ({ isDev: false }));
@@ -35,6 +60,7 @@ vi.mock('./gui-adapter', () => ({ ElectronGUIAdapter: class {} }));
 vi.mock('./keyword-gate', () => ({
   KeywordGate: class {
     load = vi.fn();
+    reset = vi.fn();
   },
 }));
 vi.mock('./memory', () => ({
@@ -42,7 +68,11 @@ vi.mock('./memory', () => ({
 }));
 vi.mock('./voice/qwen-omni', () => ({
   QwenOmniProvider: class {
+    constructor(config: { voice?: string }) {
+      mock.voiceConfig = config.voice;
+    }
     bargeIn = mock.bargeIn;
+    setVoice = mock.setVoice;
   },
 }));
 vi.mock('./voice-brain', () => ({
@@ -65,6 +95,8 @@ beforeEach(() => {
   vi.resetModules();
   vi.clearAllMocks();
   mock.handlers.clear();
+  mock.skinId = undefined;
+  mock.skinListeners.clear();
   vi.useFakeTimers();
   vi.stubEnv('QWEN_API_KEY', 'test');
   mock.brainStart.mockResolvedValue(undefined);
@@ -122,4 +154,27 @@ it('closes capture that finishes opening after pause and ignores its ready event
   mock.captureCallbacks!.onReady('Stale microphone');
   expect(mock.closeCapture).toHaveBeenCalledOnce();
   expect(invoke('get-capture-ready')).toEqual({ ready: false });
+});
+
+it('restores the saved character voice and switches while remaining paused', async () => {
+  mock.skinId = 'jarvis';
+  const { startVoiceService } = await import('./voice-service');
+  const { getCompanionStore } = await import('../store/companion');
+  startVoiceService();
+  expect(mock.voiceConfig).toBe('Raymond');
+  await invoke('start');
+  invoke('stop');
+  mock.brainStart.mockClear();
+  mock.startCapture.mockClear();
+  getCompanionStore().set('skinId', 'awesome-agumon--legeling');
+  expect(mock.setVoice).toHaveBeenLastCalledWith('Evan');
+  expect(mock.send).toHaveBeenCalledWith(
+    'cyrvis:voice:response-stopped',
+    undefined,
+  );
+  expect(mock.brainStart).not.toHaveBeenCalled();
+  expect(mock.startCapture).not.toHaveBeenCalled();
+  expect(invoke('get-capture-ready')).toEqual({ ready: false });
+  getCompanionStore().set('skinId', 'removed');
+  expect(mock.setVoice).toHaveBeenLastCalledWith('Tina');
 });

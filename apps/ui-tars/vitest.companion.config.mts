@@ -14,6 +14,7 @@ export default defineConfig({
     environment: 'node',
     include: [
       'src/shared/companion.test.ts',
+      'src/main/cyrvis/voice/qwen-omni.test.ts',
       'src/main/cyrvis/companion-voice-controls.test.ts',
       'src/shared/companion-skins.test.ts',
       'src/main/cyrvis/{controller,voice-brain,intent-gate,proactivity}.test.ts',

@@ -11,6 +11,8 @@ import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron';
 
 import * as env from '@main/env';
 import { logger } from '@main/logger';
+import { getCompanionStore } from '@main/store/companion';
+import { resolveCompanionSkin } from '@shared/companion-skins';
 import {
   describeControllerEvent,
   describeVoiceToolCall,
@@ -1375,6 +1377,7 @@ export const startVoiceService = (): VoiceService | null => {
   }
 
   const controller = new CyrvisController(new ElectronGUIAdapter());
+  const companionStore = getCompanionStore();
   let provider!: QwenOmniProvider;
 
   const brain = new VoiceBrain(
@@ -1545,7 +1548,7 @@ export const startVoiceService = (): VoiceService | null => {
         apiKey,
         model: process.env.QWEN_MODEL || 'qwen3.8-omni-flash-realtime',
         endpoint: process.env.QWEN_REALTIME_URL || undefined,
-        voice: process.env.QWEN_VOICE || undefined,
+        voice: resolveCompanionSkin(companionStore.get('skinId')).voice,
         callbacks: wrapped,
         vadType: 'semantic_vad_ec',
         // 1.2s felt like the assistant was deaf: users repeat "Hello" before
@@ -1578,6 +1581,22 @@ export const startVoiceService = (): VoiceService | null => {
   );
 
   service = { brain, provider, controller };
+  const unsubscribeSkin = companionStore.onDidChange('skinId', (skinId) => {
+    const skin = resolveCompanionSkin(skinId);
+    if (!provider.setVoice(skin.voice)) return;
+    const wasPlaying = assistantPlaybackActive;
+    assistantPlaybackActive = false;
+    capturePreroll = [];
+    keywordRejectUntil = 0;
+    keywordGate?.reset();
+    resetSpeakerDetection();
+    if (wasPlaying) provider.muteMicFor(800);
+    broadcast('cyrvis:voice:response-stopped');
+    logger.info('[cyrvis voice] companion voice changed', {
+      skinId: skin.id,
+      voice: skin.voice,
+    });
+  });
 
   // Load the local stop-word models before capture starts. If a model is
   // missing the voice service still works; only the keyword fast-path is off.
@@ -1645,6 +1664,7 @@ export const startVoiceService = (): VoiceService | null => {
   });
 
   app.on('before-quit', () => {
+    unsubscribeSkin();
     globalShortcut.unregisterAll();
     captureService?.close();
     captureService = null;
